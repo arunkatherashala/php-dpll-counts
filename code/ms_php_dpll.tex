@@ -1,0 +1,758 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{url}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{hypothesis}{Hypothesis}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\newcommand{\PHP}{\mathrm{PHP}}
+\newcommand{\Fub}{\mathrm{Fub}}
+\newcommand{\pig}{\mathrm{pig}}
+\newcommand{\mex}{\operatorname{mex}}
+\newcommand{\UP}{\mathrm{UP}}
+\newcommand{\todo}[1]{\textbf{[TODO: #1]}}
+\newcommand{\N}{\mathbb{N}}
+
+\title{Exact conflict counts of unit-propagating DPLL on the pigeonhole principle:\\
+closed forms for pigeon-major and hole-major static orders}
+\author{Sai Arun Kumar Katherashala}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study the number of conflict leaves of the DPLL procedure with unit propagation on the
+pigeonhole formula $\PHP(n{+}1,n)$ (pigeon clauses and hole-pair clauses only) when the
+branching variable is chosen by a fixed static order of the $n(n{+}1)$ variables. For the
+\emph{pigeon-major} order we prove that the number of conflict leaves is $n\cdot\Fub(n{-}1)$, where
+$\Fub$ denotes the ordered Bell (Fubini) numbers (OEIS A052882). For the \emph{hole-major} order
+we prove that it is $(n+2)^{n-2}+(n+3)^{n-2}$ for $n\ge 2$. We derive the exponential generating
+functions and the resulting asymptotics. We also report exact values for the anti-diagonal static
+order ($n\le 16$; the value for $n=16$ is from a single run, see Section~\ref{sec:limits}) and for a dynamic Jeroslow--Wang rule with 4-way branching (``$\mathcal D_2$-JW'', called Res(2)-JW in earlier drafts and not Krajicek's Res(2),
+$n\le 14$), for which we know no closed form, and we prove a conditional statement about the
+$\mathcal D_2$-JW generating function (conditional on an unproved growth hypothesis). These counts are
+properties of a branching heuristic; they are \emph{not} resolution proof sizes, and nothing here
+is a lower bound for any proof system. We also list the claims of earlier drafts of this work that
+are not established or are false, with counterexamples.
+\end{abstract}
+
+%=====================================================================
+\section{Introduction}\label{sec:intro}
+
+\paragraph{Setting.}
+Let $\PHP(n{+}1,n)$ be the CNF formula over the variables $x_{i,j}$
+($i\in\{0,\dots,n\}$ a pigeon, $j\in\{1,\dots,n\}$ a hole) consisting of the $n{+}1$
+\emph{pigeon clauses} $P_i=\bigvee_{j=1}^n x_{i,j}$ and the $n\binom{n+1}{2}$ \emph{hole clauses}
+$(\neg x_{i,j}\vee\neg x_{k,j})$, $0\le i<k\le n$, $1\le j\le n$. There are no functional
+clauses (a pigeon may occupy several holes) and no onto clauses; this is the formulation used by
+Haken~\cite{Haken85}. The formula is unsatisfiable.
+
+\paragraph{The procedure.}
+\emph{DPLL with unit propagation} (we write $\UP$) is the following search procedure
+\cite{DP60,DLL62}. At a node with a partial assignment $\alpha$, run unit propagation: while some
+clause has no true literal and exactly one unassigned literal, make that literal true; stop with a
+\emph{conflict} if some clause has all literals false. If there is a conflict the node is a
+\emph{conflict leaf}. Otherwise let $x$ be the first unassigned variable in a fixed \emph{static
+order} and create two children, $\alpha\cup\{x{=}1\}$ and $\alpha\cup\{x{=}0\}$. Only unit clauses
+are used (no pure literals, no learning). Because $\PHP$ is unsatisfiable every maximal branch ends
+in a conflict, so the search tree is a full binary tree whose number of nodes is twice its number of
+conflict leaves minus one. The number of conflict leaves does not depend on which child is explored
+first (the tree is the set of all children of every node; the branching variable of a node depends only on the set of assigned variables for a static order, and on the assignment itself for JW, never on the order in which children are visited). Let $C_\prec(n)$ denote the number of conflict leaves for the static order $\prec$.
+
+\paragraph{Orders.} In terms of the variable $x_{i,j}$:
+\begin{itemize}
+\item \emph{pigeon-major}: $x_{i,j}\prec x_{i',j'}$ iff $(i,j)<(i',j')$ lexicographically
+  (row by row);
+\item \emph{hole-major}: iff $(j,i)<(j',i')$ lexicographically (column by column, each column from
+  pigeon $0$ down to pigeon $n$);
+\item \emph{anti-diagonal}: iff $(i+j,\,i)<(i'+j',\,i')$ lexicographically (anti-diagonals
+  $i+j=\text{const}$, increasing pigeon inside each anti-diagonal).
+\end{itemize}
+
+\paragraph{What these numbers are, and what they are not.}
+$C_\prec(n)$ is a property of a branching heuristic on a fixed formula. It is \emph{not} the size of
+a resolution refutation. A DPLL tree with unit propagation turns into a tree-like resolution
+refutation only after each conflict leaf is expanded into a unit-resolution derivation, which adds
+leaves. For instance, $\PHP(2,1)$ has $C(1)=1$ in every order (the root already propagates to a
+conflict), but every tree-like resolution refutation of it has $3$ leaves (the axioms $x_{0,1}$,
+$x_{1,1}$, $\neg x_{0,1}\vee\neg x_{1,1}$). The minimum number of leaves of a decision tree whose
+every leaf falsifies an axiom (equivalently, the minimum size in leaves of a tree-like resolution
+refutation) is $3,11,43,189$ for $n=1,2,3,4$ (Section~\ref{sec:comp}); the pigeon-major counts
+$1,2,9,52$ are smaller. General resolution is governed by Haken's theorem \cite{Haken85}:
+every resolution refutation of $\PHP(n{+}1,n)$ has size $2^{\Omega(n)}$ (see also
+\cite{CR79} for the framework of proof systems). \emph{We make no claim about lower bounds for
+any proof system, and none of our results should be read as one.}
+
+\paragraph{Results.}
+\begin{enumerate}
+\item[(A)] (Theorem~\ref{thm:pig}) Pigeon-major: $C(n)=n\cdot\Fub(n-1)$ for all $n\ge1$.
+\item[(B)] (Theorem~\ref{thm:hole}) Hole-major: $C(1)=1$ and $C(n)=(n+2)^{n-2}+(n+3)^{n-2}$ for
+  all $n\ge2$.
+\item[(C)] Exact values for the anti-diagonal order ($n\le16$; $n=16$ from a single run) and for the $\mathcal D_2$-JW rule
+  ($n\le14$), for which no closed form is known to us (Section~\ref{sec:comp}).
+\item[(D)] Generating functions and asymptotics for (A) and (B) (Section~\ref{sec:asym}).
+\item[(E)] A conditional theorem on the generating function of the $\mathcal D_2$-JW counts
+  (Theorem~\ref{thm:C}, Section~\ref{sec:cond}), resting on an explicitly stated, \emph{unproved}
+  Hypothesis~\ref{hyp:H}.
+\item[(G)] The congruence $r(n)\equiv1\pmod 3$ for the $\mathcal D_2$-JW counts (Proposition~\ref{prop:mod3}).
+\item[(F)] A list of claims in earlier drafts of this work that are false or not established
+  (Section~\ref{sec:errata}).
+\end{enumerate}
+To our knowledge the closed form (B) and the generating-function form of the hole-major counts
+are new; (A) gives a combinatorial proof for a sequence that coincides with A052882 \cite{OEIS}.
+We have made no systematic literature search beyond Section~\ref{sec:related}.
+
+\paragraph{Reproducibility.} Every numerical statement in this paper is re-verified by the script
+\texttt{ms\_check.py} (Section~\ref{sec:repro}).
+
+%=====================================================================
+\section{Preliminaries}\label{sec:prelim}
+
+A partial assignment $\beta$ is \emph{closed} (for a CNF $F$) if no clause of $F$ is falsified and no
+clause is unit (no true literal and exactly one unassigned literal). A sequence of literals
+$\ell_1,\dots,\ell_k$ is \emph{forced from} $\alpha$ if for each $s$ there is a clause $C_s\in F$
+all of whose literals except $\ell_s$ are false under $\alpha_{s-1}:=\alpha\cup\{\ell_1,\dots,\ell_{s-1}\}$
+and $\ell_s$ is unassigned under $\alpha_{s-1}$. A unit-propagation run from $\alpha$ is a maximal
+forced sequence; it ends either with a falsified clause (conflict) or at a closed assignment.
+
+\begin{lemma}[UP is confluent]\label{lem:conf}
+Let $F$ be a CNF and $\alpha$ a partial assignment.
+\begin{enumerate}
+\item If $\beta\supseteq\alpha$ is closed, then every forced sequence from $\alpha$ is contained in
+  $\beta$ and the assignment $\alpha\cup\{\ell_1,\dots,\ell_k\}$ falsifies no clause.
+\item Consequently, unit propagation from $\alpha$ ends in a conflict (for every run) iff $\alpha$
+  has no closed extension; otherwise all runs end in the same closed assignment $\UP(\alpha)$,
+  the least closed extension of $\alpha$.
+\item If $\gamma=\alpha\cup\{\ell_1,\dots,\ell_k\}$ for a forced sequence and $\gamma$ is closed, then
+  $\UP(\alpha)=\gamma$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(1) Induction on $s$: if $\ell_1,\dots,\ell_{s-1}\in\beta$, the clause $C_s$ has all literals but
+$\ell_s$ false under $\beta$; as $\beta$ is closed, $C_s$ is neither falsified nor unit, so $\ell_s$
+is true in $\beta$. A clause falsified by $\alpha\cup\{\ell_1,\dots,\ell_k\}\subseteq\beta$ would be
+falsified by $\beta$.
+(2) If $\beta$ is a closed extension, by (1) no run produces a conflict, so every run ends at a closed
+assignment $\beta^*\subseteq\beta$. Two runs ending at $\beta^*_1,\beta^*_2$ satisfy
+$\beta^*_1\subseteq\beta^*_2$ (apply this to the closed extension $\beta^*_2$) and vice versa, so they
+coincide, and each is contained in every closed extension. If there is no closed extension, a run
+cannot end without conflict (it would end at a closed extension).
+(3) $\gamma$ is a closed extension, so $\UP(\alpha)\subseteq\gamma$ by (2); and $\gamma\subseteq\UP(\alpha)$
+by (1) applied to $\beta=\UP(\alpha)$. \qedhere
+\end{proof}
+
+In particular, whether a node is a conflict leaf is independent of the order of propagation, the
+children of a non-leaf node are $\UP(\UP(\alpha)\cup\{x{=}v\})$, and in the proofs below we may
+propagate in any convenient order. Two consequences used repeatedly:
+\begin{itemize}
+\item[(U-i)] if we exhibit a closed assignment $\gamma$ reached from $\alpha$ by forced steps, then
+  $\gamma$ \emph{is} the result of unit propagation;
+\item[(U-ii)] if no closed extension of $\alpha$ exists (e.g.\ every extension without a falsified
+  clause leaves a unit clause or falsifies a hole clause), then unit propagation from $\alpha$ ends in
+  a conflict.
+\end{itemize}
+
+\paragraph{Fubini numbers.} $\Fub(0)=1$ and $\Fub(m)=\sum_{k=1}^m\binom mk\Fub(m-k)$, the ordered Bell
+numbers $1,1,3,13,75,541,\dots$ (OEIS A000670) with exponential generating function $1/(2-e^x)$.
+The sequence $\mathrm{A052882}(n)=n\cdot\Fub(n-1)$ is OEIS A052882, with e.g.f.\ $x/(2-e^x)$.
+
+%=====================================================================
+\section{Pigeon-major order}\label{sec:pig}
+
+\begin{theorem}[pigeon-major]\label{thm:pig}
+For the pigeon-major order, $C(n)=n\cdot\Fub(n-1)$ for all $n\ge1$.
+\end{theorem}
+
+\paragraph{Case $n=1$.} The pigeon clauses are the units $x_{0,1}$ and $x_{1,1}$; propagation makes both
+true and falsifies the hole clause. The root is a conflict leaf: $C(1)=1=1\cdot\Fub(0)$. From now on
+$n\ge2$. The variables are ordered $x_{0,1},\dots,x_{0,n},x_{1,1},\dots,x_{n,n}$.
+
+\subsection{States}
+\emph{Row-start data} is $(i;T_0,\dots,T_{i-1})$ where the $T_p\subseteq[n]$ ($p<i$) are nonempty and
+pairwise disjoint. Put $O_{i-1}=\bigcup_{p<i}T_p$ and let $c_1<\dots<c_f$ be the elements of
+$[n]\setminus O_{i-1}$ (the \emph{free columns}), $f=n-|O_{i-1}|$. We only use data with $f\ge2$.
+Since $|O_{i-1}|\ge i$ we then have $i\le n-f\le n-2$, so the pigeons $i,i+1,i+2$ exist.
+
+For $0\le t\le f$ and $T\subseteq\{c_1,\dots,c_t\}$ put $O=O_{i-1}\cup T$ and define the partial
+assignment $\sigma=\sigma(i;T_0,\dots,T_{i-1};t,T)$:
+\begin{itemize}
+\item[(S1)] for $p<i$: $x_{p,h}$ is true iff $h\in T_p$ (all assigned);
+\item[(S2)] row $i$: $x_{i,h}$ is false for $h\in O_{i-1}$; for $k\le t$, $x_{i,c_k}$ is true iff
+  $c_k\in T$; the variables $x_{i,c_k}$, $k>t$, are unassigned;
+\item[(S3)] for $q>i$: $x_{q,h}$ is false for $h\in O$, and unassigned otherwise.
+\end{itemize}
+$\sigma$ is \emph{admissible} if $T\ne\emptyset$, or $T=\emptyset$ and $t\le f-2$. Put
+$F(\sigma)=n-|O|=f-|T|$ (the number of columns not covered by true cells of rows $\le i$).
+The \emph{row-start state} of row $i$ is $\sigma(i;\dots;0,\emptyset)$.
+
+\begin{lemma}\label{lem:pig1}
+Let $\sigma$ be admissible, $f\ge2$.
+\begin{enumerate}
+\item[(a)] If $F\ge1$ no clause is falsified by $\sigma$; if $F\ge2$ no clause is unit, i.e.\ $\sigma$ is
+  closed.
+\item[(b)] If $F\le1$, unit propagation from $\sigma$ ends in a conflict.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+Pigeon clauses. For $p<i$, $P_p$ contains the true literal $x_{p,h}$, $h\in T_p\ne\emptyset$.
+$P_i$: if $T\neq\emptyset$ it is satisfied; if $T=\emptyset$, its literals $x_{i,h}$ with $h\in O_{i-1}$
+and $x_{i,c_k}$, $k\le t$, are false and the $f-t\ge2$ literals $x_{i,c_k}$, $k>t$, are unassigned, so it
+is neither falsified nor unit. For $q>i$, $P_q$ has false literals exactly in the columns of $O$ and
+the $F$ others unassigned: it is falsified iff $F=0$ and unit iff $F=1$.
+Hole clauses. Fix a column $h$. If $h\in O_{i-1}$ or $h\in T$, exactly one variable of the column is
+true (disjointness of the $T_p$, and $x_{q,h}$ is false for $q>i$ by (S3)), so every hole clause of the column
+contains a false variable (hence a true literal) and is satisfied. If $h\notin O$, no variable of the column is true;
+rows $p<i$ are false, row $i$ is false or unassigned, rows $q>i$ are unassigned, so every hole clause
+$\neg x_{p,h}\vee\neg x_{q,h}$ has a false variable (satisfied) or two unassigned variables (not unit).
+This proves (a).
+(b) If $F=0$, every literal of $P_{i+1}$ is false: conflict. If $F=1$ let $h_0$ be the unique column
+outside $O$. Since $f\ge 2$, pigeons $i+1$ and $i+2$ exist, and in $P_{i+1}$, $P_{i+2}$ all literals
+except $x_{i+1,h_0}$, $x_{i+2,h_0}$ are false. A closed extension of $\sigma$ would have to make both
+$x_{i+1,h_0}$ and $x_{i+2,h_0}$ true (otherwise one of these pigeon clauses is falsified or unit), which
+falsifies a hole clause. So no closed extension exists and (U-ii) gives a conflict.
+\end{proof}
+
+\begin{lemma}[transitions]\label{lem:pig2}
+Let $\sigma$ be admissible with $F\ge2$ and $t<f$, and let $c=c_{t+1}$. The first unassigned
+variable of $\sigma$ in pigeon-major order is $x_{i,c}$ (rows $<i$ are complete, and in row $i$ the cells in
+$O_{i-1}$ and $c_1,\dots,c_t$ are assigned). The two children of the node $\sigma$ are:
+\begin{enumerate}
+\item $x_{i,c}=1$: unit propagation additionally sets $x_{q,c}=0$ for $q>i$, giving
+  $\sigma'=\sigma(i;\dots;t{+}1,T\cup\{c\})$, admissible, $F'=F-1$.
+\item $x_{i,c}=0$, and not ($T=\emptyset$ and $t+1=f-1$): the assignment
+  $\sigma'=\sigma(i;\dots;t{+}1,T)$, admissible, $F'=F$.
+\item $x_{i,c}=0$, $T=\emptyset$, $t+1=f-1$: the only unassigned literal of $P_i$ is $x_{i,c_f}$, so
+  propagation sets it true and then $x_{q,c_f}=0$ for $q>i$, giving
+  $\sigma'=\sigma(i;\dots;f,\{c_f\})$, admissible, $F'=f-1$.
+\end{enumerate}
+In every case the child is a conflict leaf iff $F'\le1$; if $F'\ge2$ its propagated assignment is exactly
+$\sigma'$. If $\sigma'$ has $t'=f$ and $F'\ge2$ then $\sigma'$ equals the row-start state
+$\sigma(i{+}1;T_0,\dots,T_{i-1},T';0,\emptyset)$ with $f'=F'\ge2$ free columns.
+\end{lemma}
+\begin{proof}
+In each case $\sigma'$ is obtained from $\sigma$ plus the decision by forced steps (the hole clauses
+$(\neg x_{i,c}\vee\neg x_{q,c})$ in case 1, the unit $P_i$ and then the same hole clauses in case 3;
+$x_{p,c}$ for $p<i$ is already false). Admissibility is checked directly: in case 2, $T=\emptyset$
+forces $t+1\le f-2$ because $t\le f-2$ and $t+1\ne f-1$. If $F'\ge2$, $\sigma'$ is closed by
+Lemma~\ref{lem:pig1}(a), hence it is the propagation result by (U-i); if $F'\le1$ there is a conflict by
+Lemma~\ref{lem:pig1}(b) (the forced literals are consequences of the node, so the conflict is
+reached from the node). The identification with the row-start state of row $i{+}1$ follows by
+comparing (S1)--(S3): row $i{+}1$ is false on $O_i=O_{i-1}\cup T'$ and unassigned elsewhere, as are
+all later rows. A node with $T=\emptyset$ and $t=f-1$ never occurs by admissibility; this is why case 3
+has no second branch.
+\end{proof}
+
+At the root ($n\ge2$) no clause is unit or falsified (pigeon clauses have $n\ge2$ literals, hole
+clauses are binary), so the root is the row-start state $\sigma(0;\,;0,\emptyset)$ with $f=n$. Hence
+every non-leaf node of the tree is an admissible state with $F\ge2$, and by Lemma~\ref{lem:pig2}
+its children are determined as stated.
+
+\subsection{The recurrence}
+\begin{lemma}\label{lem:pig3}
+Let $\nu$ be a row-start node with $f\ge2$ free columns. The number of conflict leaves below $\nu$ is
+$L(f)$, depending only on $f$, where $L(1)=1$ and
+\[
+L(f)=f+\sum_{j=1}^{f-2}\binom fj L(f-j)\qquad(f\ge2).
+\]
+\end{lemma}
+\begin{proof}
+Strong induction on $f$. Inside row $i$ the transitions of Lemma~\ref{lem:pig2} depend only on
+$f$, $t$, the size of $T$ and whether $T=\emptyset$. Encode a node reached in row $i$ by the word
+$v_1v_2\cdots\in\{\mathsf T,\mathsf F\}^*$ where $v_k$ is the value of $x_{i,c_k}$; in case~3 the
+forced value $v_f=\mathsf T$ is appended after $v_1\cdots v_{f-1}=\mathsf F^{f-1}$. Then $|T|$ is the
+number of letters $\mathsf T$ and $F=f-|T|$, so by Lemma~\ref{lem:pig2} a node is a conflict leaf
+iff its word has at least $f-1$ letters $\mathsf T$; since $|T|$ grows by at most one per letter, this
+happens exactly when the number of $\mathsf T$ first equals $f-1$. The letters $v_1,\dots,v_{f-1}$ are
+always genuine binary decisions, and $v_f$ is a genuine decision unless $v_1\cdots v_{f-1}=\mathsf F^{f-1}$,
+in which case it is forced to $\mathsf T$. The word $\mathsf F^f$ never occurs.
+
+\emph{Leaves in row $i$.} The count of $\mathsf T$ first reaches $f-1$ at length $f-1$ only for the
+word $\mathsf T^{f-1}$ (one leaf), and at length $f$ iff $v_1\cdots v_{f-1}$ contains exactly $f-2$
+letters $\mathsf T$ (one $\mathsf F$ in one of $f-1$ positions) and $v_f=\mathsf T$ (a decision, or
+forced when $f=2$): $f-1$ leaves. Total: $f$ leaves, and each is a distinct node.
+
+\emph{Row-end non-leaf nodes.} A word $w\in\{\mathsf T,\mathsf F\}^f$ with $j$ letters $\mathsf T$,
+$1\le j\le f-2$, is realized by exactly one node (no prefix had $f-1$ letters $\mathsf T$), and
+nothing else is. By Lemma~\ref{lem:pig2} this node is the row-start state of row $i{+}1$ with
+$T_i=\{c_k:w_k=\mathsf T\}$ and $f-j\ge2$ free columns, with $\binom fj$ such words for each $j$.
+By induction it has $L(f-j)$ leaves below it. Summing gives the recurrence (for $f=2$ the sum is empty
+and $L(2)=2$).
+\end{proof}
+
+By the discussion of the root, $C(n)=L(n)$ for $n\ge2$, and $C(1)=1=L(1)$.
+
+\subsection{Solving the recurrence}
+We show $L(f)=f\cdot\Fub(f-1)$ for all $f\ge1$. For $f=1$: $1=1\cdot\Fub(0)$. Let $f\ge2$ and assume the claim
+for smaller arguments. Using $\binom fj(f-j)=f\binom{f-1}j$,
+\[
+L(f)=f+\sum_{j=1}^{f-2}\binom fj (f-j)\Fub(f-j-1)=f\Bigl[1+\sum_{j=1}^{f-2}\binom{f-1}j\Fub(f-1-j)\Bigr].
+\]
+The Fubini recurrence for $m=f-1$ reads $\Fub(f-1)=\sum_{j=1}^{f-1}\binom{f-1}j\Fub(f-1-j)$, whose last
+term ($j=f-1$) equals $\Fub(0)=1$. So the bracket is $\Fub(f-1)$ and $L(f)=f\,\Fub(f-1)$. This
+proves Theorem~\ref{thm:pig}. \qed
+
+The values are $1,2,9,52,375,3246,32781,378344,\dots$ (Table~\ref{tab:vals}). The proof was
+cross-checked against a clause-level implementation of the procedure ($n\le6$), against an
+independent state-based dynamic program ($n\le9$) and the recurrence of Lemma~\ref{lem:pig3} for $f\le300$
+(Section~\ref{sec:repro}).
+
+%=====================================================================
+\section{Hole-major order}\label{sec:hole}
+
+\begin{theorem}[hole-major]\label{thm:hole}
+For the hole-major order, $C(1)=1$ and for every $n\ge2$
+\[
+C(n)=L(n):=(n+2)^{\,n-2}+(n+3)^{\,n-2}.
+\]
+\end{theorem}
+
+The variables are ordered column by column: $x_{0,1},x_{1,1},\dots,x_{n,1},x_{0,2},\dots,x_{n,n}$.
+For $n=1$ the root is a conflict leaf as in Section~\ref{sec:pig}. Let $n\ge2$.
+
+\subsection{The first $n-2$ columns contain no conflict}
+Say that a node is \emph{at the start of column $c$} if it is closed (propagated, conflict free),
+columns $<c$ are completely assigned, and no variable of a column $\ge c$ is assigned. Let $T$ be the set of
+pigeons having a true cell in columns $<c$ and $U=\{0,\dots,n\}\setminus T$.
+
+\begin{lemma}\label{lem:h1}
+For a node at the start of column $c$, $1\le c\le n-1$: every pigeon in $U$ has all its cells in columns $<c$
+false, hence exactly the $n-c+1\ge2$ cells of columns $c,\dots,n$ unassigned; the pigeon clause of
+every pigeon in $T$ is satisfied. The only clauses not yet satisfied are the pigeon clauses of
+pigeons in $U$ and the hole clauses of columns $\ge c$.
+\end{lemma}
+\begin{proof}
+Pigeons in $T$ satisfy their clause by definition. A pigeon in $U$ has no true cell in columns $<c$, and
+those cells are assigned, hence false. A hole clause of a column $<c$
+has both variables assigned and, the node being conflict free, at most one of them true, hence is satisfied.
+\end{proof}
+
+\begin{lemma}[one column, $c\le n-2$]\label{lem:h2}
+Take a node at the start of column $c\le n-2$. The solver branches successively on
+$x_{0,c},x_{1,c},\dots,x_{n,c}$. Then:
+\begin{enumerate}
+\item for each $i\in\{0,\dots,n\}$ the child ``$x_{0,c},\dots,x_{i-1,c}$ false, $x_{i,c}$ true'' is
+  closed and conflict free; its assignment in column $c$ is $x_{i,c}=1$ and all other cells of column
+  $c$ equal $0$, and no variable of a column $>c$ is assigned;
+\item the child ``$x_{0,c},\dots,x_{n,c}$ all false'' is closed and conflict free, with column $c$
+  entirely false and nothing else new assigned;
+\item there are no other children and no conflict leaf occurs in column $c$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+The only clause containing $x_{j,c}$ positively is $P_j$. Falsifying $x_{j,c}$ (by decision or by
+propagation): if $j\in T$, $P_j$ is satisfied; if $j\in U$, by Lemma~\ref{lem:h1} $P_j$ has
+$n-c+1\ge3$ unassigned literals (here $c\le n-2$ is used), so after falsifying this single cell of the
+pigeon (the other cells of $P_j$ lie in other columns) it still has $\ge2$ unassigned literals and no
+true literal: it is neither unit nor falsified. Hole clauses containing $\neg x_{j,c}$ become satisfied.
+Hence setting cells of column $c$ to false triggers nothing. Setting $x_{i,c}$ true satisfies $P_i$ and
+makes the hole clauses $(\neg x_{i,c}\vee\neg x_{k,c})$ unit for those $k>i$ whose cell is not yet
+false (for $k<i$ the cell is already false by the earlier decisions): propagation sets $x_{k,c}=0$,
+which, by what was just shown, triggers nothing further; hole clauses of other columns involve no
+variable of column $c$. This gives (1) and (2); after $x_{i,c}=1$ the whole column is assigned, so the
+next decision is in column $c{+}1$, which gives (3).
+\end{proof}
+
+\begin{corollary}\label{cor:h3}
+Put $m=n-2$ and $A=\{\text{none},0,1,\dots,n\}$, $|A|=n+2$. The nodes at the start of column $n-1$ are in
+bijection with the words $w=(w_1,\dots,w_m)\in A^m$, where $w_c$ records the outcome of column $c$
+(``none'': all cells false; $i$: the first true cell is in pigeon $i$, all other cells of the column
+false). All $(n+2)^m$ words occur, no conflict leaf occurs in columns $1,\dots,m$, and the node of $w$
+has $T=T(w)=\{\text{pigeons occurring in }w\}$.
+\end{corollary}
+\begin{proof}
+The root is at the start of column $1$: there are no units since $n\ge2$ (pigeon clauses have $\ge2$
+literals, hole clauses are binary). Induct on $c$ using Lemma~\ref{lem:h2}: in each column all $n+2$
+outcomes are available, independently of $T$, because there are no functional clauses (a pigeon with a
+true cell can have another).
+\end{proof}
+Since $|T(w)|\le m=n-2$ we have $|U|\ge3$.
+
+\subsection{The last two columns}
+\begin{lemma}\label{lem:h4}
+Let a node be at the start of column $c=n-1$ (with $d=n$ the last column) and $|U|\ge3$; let
+$a=\min U$ (so the pigeons $0,\dots,a-1$ lie in $T$). The subtree below the node has exactly $a+2$
+conflict leaves: the children ``$x_{0,c},\dots,x_{i-1,c}$ false, $x_{i,c}$ true'' for $i<a$ ($a$ leaves),
+the child ``$x_{0,c},\dots,x_{a-1,c}$ false, $x_{a,c}$ true'' (one leaf) and the child
+``$x_{0,c},\dots,x_{a,c}$ false'' (one leaf). The only non-leaf nodes are the prefixes
+``$x_{0,c},\dots,x_{j,c}$ false'', $j<a$.
+\end{lemma}
+\begin{proof}
+By Lemma~\ref{lem:h1} each $p\in U$ has exactly the two unassigned cells $x_{p,c},x_{p,d}$.
+\emph{False prefixes.} For $j<a$, pigeon $j\in T$, so $P_j$ is satisfied and falsifying $x_{j,c}$
+triggers nothing: no conflict, the solver goes on to $x_{j+1,c}$.
+\emph{(i)} $x_{i,c}=1$, $i<a$. Propagation sets $x_{p,c}=0$ for all $p\ne i$, in particular for all
+$p\in U$ ($i\in T$). Then each $P_p$, $p\in U$, becomes the unit $x_{p,d}$, so $x_{p,d}=1$ for all
+$p\in U$; as $|U|\ge2$ two of them falsify a hole clause of column $d$: conflict.
+\emph{(ii)} $x_{a,c}=1$. Propagation sets $x_{p,c}=0$ for $p\ne a$, in particular for the $\ge2$ pigeons of
+$U\setminus\{a\}$, whose pigeon clauses become the units $x_{p,d}$, and two of them falsify a hole clause
+of column $d$: conflict.
+\emph{(iii)} $x_{a,c}=0$ after $x_{0,c},\dots,x_{a-1,c}$ false. Now $P_a$ is the unit $x_{a,d}$, which is
+set true; the hole clauses of column $d$ force $x_{p,d}=0$ for $p\ne a$, in particular for the $\ge2$
+pigeons of $U\setminus\{a\}$, whose pigeon clauses become the units $x_{p,c}=1$, and two of them
+falsify a hole clause of column $c$: conflict.
+These children exhaust the branching through $x_{a,c}$; (iii) ends the false path.
+\end{proof}
+
+\subsection{The exact sum}
+By Corollary~\ref{cor:h3} and Lemma~\ref{lem:h4} (with $a=\mex(w)$, the least pigeon index not occurring in
+$w$; it exists because $w$ has only $m<n+1$ letters),
+\begin{equation}\label{eq:sum}
+C(n)=\sum_{w\in A^m}\bigl(2+\mex(w)\bigr).
+\end{equation}
+
+\subsection{Evaluation of the sum}
+Let $q=n+2$, $g(x)=x^m$, $(Eg)(x)=g(x+1)$ and $(\nabla g)(x)=g(x)-g(x-1)=(1-E^{-1})g(x)$; these operators
+commute and $\nabla^kg(x)=\sum_{i=0}^k(-1)^i\binom ki g(x-i)$.
+
+\emph{Step 1.} $\mex(w)=\sum_{k=1}^{n}[\text{the letters }0,\dots,k-1\text{ all occur in }w]$, so
+$\sum_w\mex(w)=\sum_{k=1}^nN(k)$ with $N(k)$ the number of words in $A^m$ containing each of the $k$ fixed
+letters $0,\dots,k-1$.
+
+\emph{Step 2 (inclusion--exclusion).} $N(k)=\sum_{i=0}^k(-1)^i\binom ki(q-i)^m=(\nabla^kg)(q)$. For
+$k>m$ a word of length $m$ cannot contain $k$ distinct letters, so $N(k)=0$, consistent with
+$\nabla^kg=0$ for $k>m=\deg g$. Hence $\sum_w\mex(w)=\sum_{k=1}^m(\nabla^kg)(q)$.
+
+\emph{Step 3 (identity).} For every polynomial $g$ of degree $\le m$,
+\[
+\sum_{k=1}^m\nabla^kg=(E-1)g.
+\]
+Indeed $1-\nabla=E^{-1}$ gives $\bigl(\sum_{k=1}^m\nabla^k\bigr)(1-\nabla)=\nabla-\nabla^{m+1}$. Multiplying
+by $E$ and using $E\nabla=E-1$ we get $\sum_{k=1}^m\nabla^k=(E-1)-E\nabla^{m+1}$, and $\nabla^{m+1}g=0$
+because each $\nabla$ lowers the degree by one and kills constants. (For $m=0$ both sides are $0$.)
+
+\emph{Step 4.} By \eqref{eq:sum}, $C(n)=2g(q)+\bigl(g(q+1)-g(q)\bigr)=g(q)+g(q+1)=(n+2)^{n-2}+(n+3)^{n-2}$.
+For $n=2$ ($m=0$, $g=1$, empty sum) this gives $C(2)=2$. This proves Theorem~\ref{thm:hole}. \qed
+
+The values are $1,2,11,85,855,10657,159049,2771561,\dots$ (Table~\ref{tab:vals}). Verification: clause-level
+procedure $n\le6$, independent state dynamic program $n\le9$, an explicit model of Lemmas~\ref{lem:h2} and
+\ref{lem:h4} on subsets of pigeons ($n\le10$), direct enumeration of the word sum \eqref{eq:sum}
+($n\le6$), the inclusion--exclusion form and the closed form ($n\le60$), and the identity of Step~3 on
+random polynomials.
+
+%=====================================================================
+\section{Computations for other rules}\label{sec:comp}
+
+\subsection{Exact values}
+Table~\ref{tab:vals} lists the conflict-leaf counts for all four rules for $n\le14$; the anti-diagonal order
+continues with
+\[
+C_{\mathrm{diag}}(15)=547848248627841,\qquad C_{\mathrm{diag}}(16)=15045475165081609.
+\]
+The anti-diagonal values for $n=1,\dots,16$ are
+$1,2,8,45,331,3057,34007,441515,6541557,108804265,2006371441,40615858425,895407989033,\allowbreak 21354721047401,547848248627841,15045475165081609.$
+
+\begin{table}[ht]
+\centering
+\scriptsize
+\begin{tabular}{r r r r r}
+$n$ & pigeon-major & hole-major & anti-diagonal & $\mathcal D_2$-JW \\ \hline
+1 & 1 & 1 & 1 & 1 \\
+2 & 2 & 2 & 2 & 4 \\
+3 & 9 & 11 & 8 & 13 \\
+4 & 52 & 85 & 45 & 61 \\
+5 & 375 & 855 & 331 & 307 \\
+6 & 3\,246 & 10\,657 & 3\,057 & 2\,110 \\
+7 & 32\,781 & 159\,049 & 34\,007 & 14\,746 \\
+8 & 378\,344 & 2\,771\,561 & 441\,515 & 130\,687 \\
+9 & 4\,912\,515 & 55\,318\,979 & 6\,541\,557 & 1\,187\,971 \\
+10 & 70\,872\,610 & 1\,245\,712\,417 & 108\,804\,265 & 12\,801\,700 \\
+11 & 1\,124\,723\,193 & 31\,265\,546\,157 & 2\,006\,371\,441 & 143\,164\,903 \\
+12 & 19\,471\,590\,876 & 865\,905\,045\,601 & 40\,615\,858\,425 & 1\,819\,083\,835 \\
+13 & 365\,190\,378\,735 & 26\,241\,941\,903\,791 & 895\,407\,989\,033 & 24\,104\,576\,248 \\
+14 & 7\,376\,016\,877\,334 & 864\,097\,213\,940\,417 & 21\,354\,721\,047\,401 & 353\,344\,753\,156 \\
+\end{tabular}
+\caption{Conflict leaves of DPLL with unit propagation on $\PHP(n{+}1,n)$. The first two columns are given by
+Theorems~\ref{thm:pig} and~\ref{thm:hole}; the last two columns are computed (see text).}
+\label{tab:vals}
+\end{table}
+
+\subsection{The anti-diagonal order}
+This is the static order defined in the introduction. We know no closed form, recurrence or asymptotic law for it
+and make no claim about its generating function (in particular none about D-finiteness).
+The values were computed with a layered dynamic program over states $(\mathrm{pos},U,O)$, where $\mathrm{pos}$ is the
+position of the next undecided variable, $U$ the set of pigeons without a true cell and $O$ the set of holes with a
+true cell (program \texttt{ref\_dp.rs}). We did not prove the correctness of this reduction; instead it
+was validated against (i) our clause-level implementation of the procedure for $n\le10$ and (ii) an independently
+written Python port of the state dynamic program for $n\le9$. The Rust program was re-run in the preparation of this
+paper for $n\le13$; the values for $n=14,15,16$ come from a single earlier run (about $29$, $137$ and $886$ seconds; $1.9\cdot10^{9}$
+states at $n=16$).
+
+\subsection{The rule $\mathcal D_2$-JW}\label{sec:res2}
+\begin{definition}[$\mathcal D_2$-JW]
+Given a node with partial assignment $\alpha$, run unit propagation; on a conflict the node is a leaf. Otherwise,
+for every unassigned variable $x$ define its Jeroslow--Wang score \cite{JW90}
+\[
+J(x)=\sum_{C\ni x\text{ or }\neg x,\ C\text{ not satisfied by }\alpha}2^{-u(C)},
+\]
+where $u(C)$ is the number of unassigned literals of $C$ (both polarities of $x$ are summed). Let $x^{(1)},x^{(2)}$ be
+the two unassigned variables with the largest scores, ties broken in favour of the variable that is earlier in
+row-major order ($x_{0,1},x_{0,2},\dots$) (by Proposition~\ref{prop:mod3} below, at least six variables are unassigned at every non-conflict node, so two variables can always be chosen).
+The node has four children, one for each of the four assignments of $(x^{(1)},x^{(2)})$, each followed by unit
+propagation. $r(n)$ is the number of conflict leaves.
+\end{definition}
+(For $\PHP$ the clauses containing $x_{i,j}$ that are not satisfied are $P_i$, if $i$ has no true cell, and the
+hole clauses $\{x_{i,j},x_{k,j}\}$ with $x_{k,j}$ unassigned, so $J(x_{i,j})=2^{-u(P_i)}[P_i\text{ open}]+(u_j-1)/4$ with $u_j$ the number of unassigned
+cells in column $j$.) The values are $r(1),\dots,r(14)=1,4,13,61,307,2110,14746,130687,1187971,12801700,143164903,1819083835,24104576248,353344753156$.
+They were computed by a memoised search on residual states canonical under order-preserving renaming of holes and
+rows (program \texttt{ref\_resk.rs}); the number of memoised states is $1127$ for $n=8$ and $10\,884\,108$ for $n=14$. We verified the
+state-based search against a direct clause-level implementation of the definition for $n\le7$ ($k=2$; $n\le7$ also for $k=3,4$ in the companion logs) and against an independent
+Python port for $n\le12$. The Rust program was re-run for $n\le12$ here; $r(13)$ (about one minute) and $r(14)$ (about one hour)
+are taken from earlier runs; in a later independent audit, $r(1),\dots,r(15)$ were also reproduced by separately written programs (a state-compressed Rust program for $n\le15$), whereas $r(16)$ has not been reproduced. An earlier audit found the same counts for $n\le 8$ when ties are broken towards the \emph{last} variable instead
+(not re-run here). We know no closed form for $r(n)$, and no proof of any growth law; the congruence $r(n)\equiv1\pmod3$ is proved in Proposition~\ref{prop:mod3}.
+
+\begin{proposition}\label{prop:mod3}
+Let $n\ge2$. Every partial assignment of $\PHP(n{+}1,n)$ that falsifies no clause and has no unit clause leaves at least six variables unassigned. Consequently every internal node of the $\mathcal D_2$-JW tree has exactly four children, $r(n)=3I(n)+1$, and $r(n)\equiv1\pmod 3$ for all $n\ge1$. The same holds, with $2^k$ children and modulus $2^k-1$, for the $k$-variable rule for $2\le k\le6$, and for any rule that chooses $k$ unassigned variables.
+\end{proposition}
+\begin{proof}
+Let $T$ be the pigeons with a true cell and $U$ the others. Distinct pigeons of $T$ have true cells in distinct holes (a hole clause would be falsified), so the set $O$ of holes with a true cell has $|O|\ge|T|$; put $e=n-|O|$. Then $|U|=n+1-|T|\ge e+1\ge1$. For $p\in U$ and $h\in O$ the hole clause with the true cell of hole $h$ would be unit or falsified unless $x_{p,h}$ is false; so all unassigned cells of row $p$ lie in the $e$ holes outside $O$. Since $p\in U$, $P_p$ has no true literal; it is neither falsified nor unit, so it has at least two unassigned literals; hence $e\ge2$, $|U|\ge3$, and the rows of $U$ contribute at least $3\cdot2=6$ unassigned variables. At a non-conflict node (closed assignment, Lemma~\ref{lem:conf}) the lemma applies, so $\min(k,m)=k$ for $k\le6$ and each internal node has $2^k$ children; for $n=1$ the root is a conflict leaf. A tree in which every internal node has $2^k$ children satisfies $L=(2^k-1)I+1$ by edge counting.
+\end{proof}
+
+\subsection{Reproducibility}\label{sec:repro}
+The files \texttt{ref\_dp.rs} (static-order dynamic program; usage
+\texttt{ref\_dp <pig|hole|diag> nmin nmax threads}), \texttt{ref\_resk.rs} (Res($k$)-JW; usage
+\texttt{ref\_resk k nmin nmax}) and \texttt{ms\_check.py} accompany the paper and are deposited at
+\url{https://github.com/arunkatherashala/php-dpll-counts} (directory \texttt{code/}). \texttt{ms\_check.py} recomputes, in exact integer or rational arithmetic, the
+clause-level counts, the state dynamic programs, all closed forms for $n\le60$ (and the recurrence of
+Lemma~\ref{lem:pig3} for $f\le300$), the identities used in the proofs, the counterexamples of
+Section~\ref{sec:errata}, and the certificates of Theorem~\ref{thm:C}; it runs the Rust executables when present
+and prints \texttt{ALL OK} at the end. Items it does not recompute (the stored runs mentioned above and the
+$n=4$ minimum tree-resolution value, available with \texttt{--slow}) are listed at the end of its output.
+
+\paragraph{Machine-checked parts.} The directory \texttt{lean/} of the same repository contains Lean~4 files (core
+library only, no Mathlib; no \texttt{sorry} and no axioms beyond \texttt{propext}, \texttt{Quot.sound} and
+\texttt{Classical.choice}) that verify, for \emph{all} $f$ and $n$, the purely combinatorial halves of
+Theorems~\ref{thm:pig} and~\ref{thm:hole}: that the recurrence of Lemma~\ref{lem:pig3} has the solution
+$L(f)=f\cdot\Fub(f-1)$ (\texttt{Pigeon.lean}), and that the word sum \eqref{eq:sum} equals
+$(n+2)^{n-2}+(n+3)^{n-2}$ for $n\ge2$ (\texttt{Hole.lean}, \texttt{Hole2.lean}). The reductions from the DPLL
+procedure with unit propagation to the recurrence and to the word sum (Lemmas~\ref{lem:pig1}, \ref{lem:pig2},
+\ref{lem:h1}, \ref{lem:h2} and~\ref{lem:h4}, Corollary~\ref{cor:h3}) are \emph{not} formalized; they rest on the proofs given here.
+
+\subsection{Earlier claims that are false or not established}\label{sec:errata}
+Earlier drafts of this work (a series of manuscripts on the same numerical data) contained statements that we
+withdraw or correct here. We list them, so that nothing in this paper is read as supporting them.
+\begin{enumerate}
+\item \emph{``These are the first exact formulas for tree-resolution proof size.''} Misdescribed. The
+  quantities are DPLL-with-UP conflict counts for a fixed branching heuristic. The true minimum number of
+  leaves of tree-like resolution refutations of $\PHP(n{+}1,n)$ is $3,11,43,189$ for $n=1,\dots,4$
+  (recomputed here by exhaustive search over decision trees for $n\le3$; the value $189$ for $n=4$ was obtained in an
+  earlier audit and by a run of the same search, available with \texttt{ms\_check.py --slow}), compared with
+  pigeon-major counts $1,2,9,52$.
+\item \emph{``The dynamic Jeroslow--Wang heuristic gives exactly $n!$, and $n!$ is the minimum over all
+  orderings.''} The minimality statement is false for adaptive variable choice: minimizing over \emph{all} adaptive
+  choices of the branching variable at every node, the minimal number of conflict leaves of DPLL with
+  unit propagation is $1,2,6,23$ for $n=1,\dots,4$ (exhaustive search over canonical states), and $23<4!=24$.
+  Whether some \emph{static} order beats $n!$ at $n=4$ is not decided here. The claimed value $n!$ for the dynamic rule is not
+  established in this paper.
+\item \emph{Asymptotics of the pigeon-major counts.} It was claimed that $A052882(n)\sim n!/(2\ln2)^n$, i.e.\ that
+  $C(n)/n!\to0$ geometrically. This is wrong: $C(n)/n!\sim\tfrac12(\ln2)^{-n}$ grows (Proposition~\ref{prop:pigasym}). A
+  claim that the hole-major count divided by $n!$ grows like $2.47^n$, with the EGF coefficient ratio converging to $e-\tfrac12\approx2.22$, is also wrong; the
+  ratio of consecutive EGF coefficients tends to $e$ (Proposition~\ref{prop:holeasym}).
+\item \emph{``The diagonal sequence is not D-finite''} (with the associated Pad\'e/ODE ``asymptotic law'',
+  $\rho\approx0.544$, etc.). Not established. The argument consisted of rank/least-squares tests on a finite prefix of the
+  sequence; such a test can at most show that a prefix is not annihilated by an ODE of a given small order and degree (and
+  every finite prefix is annihilated by some larger ODE). Furthermore the text defined the sequence by a diagonal
+  order with Jeroslow--Wang scoring, whereas the tabulated numbers are those of the static anti-diagonal order
+  defined here. We have no result on the type of singularity of the anti-diagonal generating function.
+\item \emph{A ``crossover theorem'': $\mathcal D_2$-JW has the smallest tree among four orderings for all $n\ge10$.} Not a
+  theorem, and not supported as stated. With the exact values of Table~\ref{tab:vals}, $\mathcal D_2$-JW is the smallest of the four counts for every
+  $5\le n\le14$, so there is no crossover at $n=10$ in this data (the earlier table contained inconsistent pigeon-major and hole-major columns).
+  The four numbers also count leaves of trees with different branching (binary versus 4-way) and
+  different rules, so a comparison is not a statement about problem difficulty.
+\item \emph{A quasi-polynomial closed form} $a(n)=(n^2+13n+c(n\bmod6))/6$, $c=(6,10,6,12,4,12)$, for $a(n)=\lfloor r(n{+}1)/n!\rfloor$,
+  and the conclusions drawn from it (a triple pole, and so on). False. $a(n)=1,4,6,10,12,17,20,25,29,35,39$ for $n\le10$ agrees with the formula, but
+  $a(11)=45$ (since $r(12)/11!=45.5718\dots$) whereas the formula gives $46$; also $a(12)=50$ versus $51$ and $a(13)=56$ versus $58$. Eleven
+  data points do not support a formula with six free periodic parameters.
+\item \emph{Res(2) singularity claims} (a singularity at $\rho\approx0.894$, exponent $3/2$): numerical conjectures that we have neither
+  re-derived nor used.
+\item \emph{Logarithmic singularity ``proved computationally'' from 12 terms.} Finite data cannot establish a statement about the
+  radius of convergence of an infinite series (Remark~\ref{rem:tail}); the correct status is Theorem~\ref{thm:C}, which is conditional.
+  In that line of work the printed recurrence for the coefficients of $\log R$ must read $nf_n=nb_n-\sum_{k<n}kf_kb_{n-k}$, and the claim
+  $F_n\equiv0\pmod 6$ for $n\ge4$ is false ($F_6=-31059$ is odd).
+\end{enumerate}
+
+%=====================================================================
+\section{Generating functions and asymptotics}\label{sec:asym}
+
+\subsection{Pigeon-major}
+By Theorem~\ref{thm:pig}, $\sum_{n\ge1}C(n)\,x^n/n!=\sum_{n\ge1}\Fub(n-1)x^n/(n-1)!=x/(2-e^x)$.
+
+\begin{proposition}\label{prop:pigasym}
+$\displaystyle C(n)=\frac{n!}{2(\ln2)^n}\bigl(1+O(\kappa^n)\bigr)$ with $\kappa=\ln2/|\ln2+2\pi i|=0.1097\ldots$. More precisely,
+for $n\ge2$ one has the pole expansion $C(n)/n!=\tfrac12\sum_{k\in\mathbb Z}(\ln2+2\pi ik)^{-n}$. Equivalently
+$\Fub(m)\sim m!/(2(\ln2)^{m+1})$ and $C(n)=n\Fub(n-1)$.
+\end{proposition}
+\begin{proof}
+$x/(2-e^x)$ is meromorphic with simple poles at $x_k=\ln2+2\pi ik$, $k\in\mathbb Z$; near $x_k$,
+$2-e^x=-2(x-x_k)+O((x-x_k)^2)$, so the principal part is $\tfrac{x_k}{2(x_k-x)}$, whose $n$-th coefficient is $\tfrac12x_k^{-n}$. The
+dominant singularity is $x_0=\ln2$; the next ones have modulus $|x_{\pm1}|=6.32\ldots$. The asymptotic statement is the standard
+theorem for meromorphic functions with a unique dominant simple pole \cite[Thm.~IV.10]{FS09}. The full
+pole expansion follows by the same contour argument and was checked numerically (Section~\ref{sec:repro}).
+\end{proof}
+Numerically $C(n)\,2(\ln2)^n/n!=0.99999999977$ at $n=10$ and $1-O(10^{-15})$ for $n\ge20$. In particular
+$C(n)/n!\to\infty$ (like $\tfrac12\cdot1.4427^n$). Since the generating function has infinitely many poles it is not D-finite (a D-finite
+function has finitely many singularities).
+
+\subsection{Hole-major}
+Let $T(x)=\sum_{n\ge1}n^{n-1}x^n/n!$ be the tree function, $T=xe^{T}$, with radius of convergence $1/e$ and the expansion
+$T(x)=1-\sqrt2\,s^{1/2}+\tfrac23s-\cdots$, $s=1-ex$ at $x=1/e$.
+\begin{proposition}\label{prop:holeasym}
+For $a\ge1$,
+\[
+\sum_{n\ge0}(n+a)^{n-2}\frac{x^n}{n!}=e^{aT}\Bigl(\frac1{a^2}-\frac{T}{a(a+1)}\Bigr).
+\]
+Consequently $H(x):=\sum_{n\ge1}C(n)x^n/n!=e^{2T}\bigl(\tfrac14-\tfrac T6\bigr)+e^{3T}\bigl(\tfrac19-\tfrac T{12}\bigr)-\tfrac{13}{36}+\tfrac5{12}x$. $H$ has a unique
+dominant singularity at $x=1/e$ of type $(1-ex)^{3/2}$:
+\[
+H(x)=\text{(analytic)}+\tfrac{2\sqrt2}{3}\,(e^2+e^3)(1-ex)^{3/2}+O\bigl((1-ex)^2\bigr),
+\]
+and
+\[
+\frac{C(n)}{n!}=\frac{e^2+e^3}{\sqrt{2\pi}}\,\frac{e^{n}}{n^{5/2}}\bigl(1+O(1/n)\bigr),\qquad
+C(n)=n^{\,n-2}\Bigl(e^2+e^3-\frac{6e^2+\frac{21}2e^3}{n}+O(n^{-2})\Bigr).
+\]
+In particular $C(n)\sim(e^2+e^3)\,n^{n-2}=27.4745\ldots\,n^{n-2}$, and the ratio of consecutive coefficients $\frac{C(n+1)/(n+1)!}{C(n)/n!}$ tends to $e$.
+\end{proposition}
+\begin{proof}
+From $T=xe^T$, Lagrange inversion gives $e^{aT}=\sum_{n\ge0}a(n+a)^{n-1}x^n/n!$, i.e.\ $T(t)^a/t=\sum_{n\ge0}a(n+a)^{n-1}t^{n+a-1}/n!$ (using $T^a=t^ae^{aT}$).
+Integrating termwise and using $\int_0^xt^{n+a-1}dt=x^{n+a}/(n+a)$ we get, for $G_a(x):=\sum_{n\ge0}a(n+a)^{n-2}x^{n+a}/n!$,
+$G_a(x)=\int_0^xT(t)^a\,dt/t$. Substituting $u=T(t)$, $t=ue^{-u}$, $dt/t=(1-u)\,du/u$ (valid for formal power series), we get
+$G_a=\int_0^{T}u^{a-1}(1-u)\,du=T^a/a-T^{a+1}/(a+1)$. Dividing by $ax^a$ and using $T^ax^{-a}=e^{aT}$ gives the first formula. The formula for $H$ follows from $a=2,3$, because $(n+a)^{n-2}$ for $n=0,1$ gives the constant terms $\tfrac14+\tfrac19=\tfrac{13}{36}$ and
+$\tfrac13+\tfrac14=\tfrac7{12}$ of the sum, and $C(1)=1$: $1-\tfrac7{12}=\tfrac5{12}$.
+
+Singular behaviour. Put $B_a(T)=e^{aT}(a^{-2}-T/(a(a+1)))$. Then $B_a'(T)=e^{aT}b(T)$ with $b(T)=\tfrac1a-\tfrac T{a+1}-\tfrac1{a(a+1)}$, and $b(1)=0$; thus $B_a'(1)=0$ (the
+square-root term cancels), $B_a''(1)=-e^a/(a+1)$, $B_a'''(1)=-2ae^a/(a+1)$. Inserting $T-1=-\sqrt2s^{1/2}+\tfrac23s+O(s^{3/2})$ gives
+$(T-1)^2=2s-\tfrac{4\sqrt2}3s^{3/2}+O(s^2)$ and $(T-1)^3=-2\sqrt2s^{3/2}+O(s^2)$, so the coefficient of $s^{3/2}$ in $B_a(T(x))$ is
+$-\tfrac{\sqrt2}{3}\bigl(2B_a''(1)+B_a'''(1)\bigr)=\tfrac{2\sqrt2}3e^a$. Since $T$ is analytic in a $\Delta$-domain at $1/e$ (the only singularity of $T$ on its circle of convergence) the transfer theorem
+\cite[Thm.~VI.3 and Cor.~VI.1]{FS09} with the coefficients of the standard scale $[x^n](1-ex)^{3/2}\sim e^nn^{-5/2}/\Gamma(-\tfrac32)$, $\Gamma(-\tfrac32)=\tfrac{4\sqrt\pi}3$ (Thm.~VI.1), yields
+$C(n)/n!\sim\tfrac{2\sqrt2}3(e^2+e^3)\tfrac3{4\sqrt\pi}\,e^nn^{-5/2}=\tfrac{e^2+e^3}{\sqrt{2\pi}}e^nn^{-5/2}$.
+Finally $(1+a/n)^{n-2}=\exp\bigl((n-2)(a/n-a^2/2n^2+O(n^{-3}))\bigr)=e^a\bigl(1-(2a+a^2/2)/n+O(n^{-2})\bigr)$, giving the stated expansion of $C(n)/n^{n-2}$ with $a=2,3$.
+\end{proof}
+\medskip
+\noindent\textbf{Numerical confirmation} (Section~\ref{sec:repro}): $C(n)/n^{n-2}=27.4695$ at $n=50\,000$ against $e^2+e^3=27.4746$; $n\bigl(C(n)/n^{n-2}-e^2-e^3\bigr)=-255.20$ at $n=50\,000$ against
+$-(6e^2+10.5e^3)=-255.23$; the EGF identity of the proposition was verified as an identity of rational power series through degree $29$; the asymptotics
+of $C(n)/n!$ were confirmed at $n=200,2000,20000$ to within $40/n$ in the logarithm.
+
+\subsection{Other rules}
+We have no asymptotic statement for the anti-diagonal order or for $\mathcal D_2$-JW (Section~\ref{sec:comp}).
+
+%=====================================================================
+\section{A conditional result for the $\mathcal D_2$-JW generating function}\label{sec:cond}
+
+Let $r(n)$ be the $\mathcal D_2$-JW counts, $b_n=r(n+1)/n!$ ($n\ge0$, so $b_0=r(1)=1$), $R(x)=\sum_{n\ge0}b_nx^n$ (this is $\frac{d}{dx}\sum_{n\ge1}r(n)x^n/n!$), and let
+$C(x)=\log R(x)=\sum_{n\ge1}f_nx^n$ be the formal logarithm, $F_n=n!f_n$. The $f_n$ obey $nf_n=nb_n-\sum_{k=1}^{n-1}kf_kb_{n-k}$ and, for $n\le13$, are determined by $b_0,\dots,b_n$.
+(We write $C(x)$ here for the generating function of the logarithm; it has nothing to do with the leaf counts $C(n)$ of the other sections, which we do not use in this section.)
+Exactly, $F_1,\dots,F_{13}=4,-3,33,-216,2496,-31059,479934,-8454426,171387720,-3898302102,98654494668,-2745253754127,83351925966882$.
+
+\paragraph{The 14-term zero.} The polynomial $R_{14}(x)=\sum_{n=0}^{13}b_nx^n$ has exactly one zero in $|x|<9/20$, a real simple zero
+\[
+x_0^{(14)}=-0.3952047138\ldots,\qquad R_{14}'(x_0^{(14)})=1.8956,
+\]
+(the 12-term polynomial had $-0.394992$). The numbers $nf_nx_0^n$, $x_0=x_0^{(14)}$, for $n=7,\dots,13$ are
+$-1.0037,-0.9982,-0.9997,-0.9985,-0.9986,-0.9984,-0.9983$, i.e.\ close to $-1$, the value expected if $C$ has a logarithmic singularity at $x_0$.
+This is numerical evidence only: it uses nothing but $b_0,\dots,b_{13}$.
+
+\begin{remark}\label{rem:tail}
+The data cannot decide the question. Changing only the tail: $b_{14}=8899.6$ and $b_n=0$ ($n>14$) makes $-0.42$ an exact zero of $R$ (so the
+dominant zero moves to $-0.42$), and $b_n=n!$ for $n\ge14$ gives a series with radius of convergence $0$. Any statement about the radius of convergence
+of $\log R$ is a statement about the infinite tail of the sequence $r(n)$ and cannot follow from $r(1),\dots,r(14)$.
+\end{remark}
+
+\begin{hypothesis}[H --- \textbf{unproved}]\label{hyp:H}
+For all $n\ge14$: $r(n+1)\le n^2\,n!$, i.e.\ $b_n\le n^2$.
+\end{hypothesis}
+Hypothesis~\ref{hyp:H} is an assumption about an infinite tail. We could not prove it: the generic bound ``leaves $\le 4^{\text{depth}}$'' gives only $r(n)\le 4^{\lceil n(n+1)/2\rceil}$,
+which is not even exponentially bounded in $b_n$, and we did not find a structural (potential-function) argument for the Jeroslow--Wang dynamics. The data are consistent with it: $b_n/n^2=0.460,0.436,0.395,0.377,0.349,0.336$ for
+$n=8,\dots,13$, decreasing. It is not proved, and passing 6 data points proves nothing about the tail.
+
+\begin{theorem}[conditional on Hypothesis~\ref{hyp:H}]\label{thm:C}
+Assume Hypothesis~\ref{hyp:H}. Then:
+\begin{enumerate}
+\item $R$ is analytic in $|x|<1$.
+\item $R$ has exactly one zero $x_0$ in $|x|<9/20$ (counted with multiplicity); it is simple, real, and $-0.395638<x_0<-0.394785$; in particular $x_0\ne-2/5$. Moreover $R<0$ on $[-0.6,-0.4]$ and $R>0$ on $[0,1)$,
+  so $x_0$ is the only zero of $R$ on $(-0.6,1)$. (We do \emph{not} claim uniqueness of a negative zero in $(-1,0)$.)
+\item The power series of $C=\log R$ has radius of convergence exactly $|x_0|$.
+\item For every $\rho<9/20$, $f_n=-x_0^{-n}/n+O(\rho^{-n})$. Hence $nf_nx_0^n\to-1$ (with error $O(n(|x_0|/\rho)^n)$ for any $\rho\in(|x_0|,9/20)$), $f_n/f_{n+1}\to x_0$, and $\operatorname{sign}f_n=(-1)^{n+1}$ for large $n$.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+Write $R_{14}=\sum_{n<14}b_nx^n$ (exact rationals). Under H, for $|x|=\rho<1$,
+\[
+|R(x)-R_{14}(x)|\le T(\rho):=\sum_{n\ge14}n^2\rho^n=\rho^{14}\,\frac{196-363\rho+169\rho^2}{(1-\rho)^3}.
+\]
+(1) follows from $0<b_n\le n^2$ for $n\ge14$.
+
+\emph{Step A (sign change).} Exact rational arithmetic gives $R_{14}(-0.39)-T(0.39)>0$ and $R_{14}(-0.40)+T(0.40)<0$; hence $R(-0.39)>0>R(-0.40)$ and the continuous real function $R$ has a zero in $(-0.40,-0.39)$. Bisection on
+the same inequalities localizes it in $(-0.395638,-0.394785)$.
+
+\emph{Step B (zero count).} We show $|R_{14}|>T(9/20)=5.61\cdot10^{-3}$ on $|x|=9/20$. The circle is sampled at $3001$ exact rational points $z=\rho(1-t^2+2it)/(1+t^2)$ ($t$ rational, two half-circles, so $|z|=\rho$ exactly);
+$L=\sum nb_n\rho^{n-1}=30.1\ge\max_{|z|=\rho}|R_{14}'|$; the arc length between consecutive samples is at most $ds=4\rho/1500$. Exact arithmetic verifies for every arc that
+$\min(|w_j|,|w_{j+1}|)-L\,ds/2>T(\rho)$, where $w_j=R_{14}(z_j)$ (the minimum of $|R_{14}|$ over the samples is $0.106$). Since each point of an arc is within $ds/2$ of a sample and $R_{14}$ is $L$-Lipschitz, $|R_{14}|>T>|R-R_{14}|$ on the whole circle.
+By Rouch\'e, $R$ and $R_{14}$ have the same number of zeros in $|x|<9/20$. The argument change of $R_{14}$ along each arc is the principal value $\operatorname{Arg}(w_{j+1}/w_j)$ (verified exactly: $L\,ds<|w_j|$), and these sum to $2\pi\cdot1.000000$, so $R_{14}$ has exactly one zero in the
+disc. Hence so has $R$; by Step A it is real and it is simple. (The floating-point \texttt{atan2} is used only to add the angle increments, each of modulus $<\pi/2$; the total is within $10^{-6}$ of an integer.)
+
+\emph{Step C (negative axis).} On a grid of step $10^{-4}$ in $[0.4,0.6]$ exact arithmetic verifies $R_{14}(-x_i)+L_i\,\text{step}+T(x_{i+1})<0$, where $L_i=\sum nb_nx_{i+1}^{n-1}$ bounds $|R_{14}'|$; thus $R<0$ on $[-0.6,-0.4]$. $R>0$ on $[0,1)$ because $b_n>0$. With Step B this proves (2).
+
+\emph{Step D (radius of $\log R$).} $D_0=\{|x|<|x_0|\}$ is simply connected, $R$ has no zero in $D_0$ and $R(0)=1$, so there is an analytic $C$ on $D_0$ with $e^{C}=R$, $C(0)=0$, whose Taylor series is the formal logarithm; the radius is $\ge|x_0|$.
+If it were $>|x_0|$, $C$ would extend analytically to a disc $D_1\ni x_0$ (take $D_1=\{|x|<\rho'\}$, $|x_0|<\rho'<9/20$), and $e^{C}=R$ on $D_1$ by the identity theorem, so $R(x_0)=e^{C(x_0)}\ne0$, a contradiction.
+
+\emph{Step E (coefficients).} $h(x):=R(x)/(1-x/x_0)$ is analytic in $|x|<1$ (the simple zero cancels) and has no zero in $|x|<9/20$ by Step B. So $\log h$ ($h(0)=1$) is analytic in this disc and by Cauchy estimates
+$[x^n]\log h=O(\rho^{-n})$ for every $\rho<9/20$. On $D_0$, $C=\log h+\log(1-x/x_0)$ (both sides are logarithms of $R$ vanishing at $0$) and $[x^n]\log(1-x/x_0)=-x_0^{-n}/n$. This gives (4) and, as $|x_0|<0.3957<9/20$, the consequences listed. \qedhere
+\end{proof}
+
+The certificates of Steps A--C are verified in exact rational arithmetic by \texttt{ms\_check.py}; the proof otherwise uses only standard complex analysis. The effective constants in (4) were not computed.
+The theorem does \emph{not} establish that $R$, or $C$, has any property unconditionally, and it says nothing about whether Hypothesis~\ref{hyp:H} holds.
+
+%=====================================================================
+\section{Related work}\label{sec:related}
+
+Resolution proof complexity of the pigeonhole principle starts with Haken's exponential lower bound for general resolution \cite{Haken85}; the notion of a proof system and
+its relation to resolution is due to Cook and Reckhow \cite{CR79}. Buss and Tur\'an extended Haken's bound to generalized pigeonhole principles \cite{BT88}; Buss and Pitassi give upper bounds for the weak pigeonhole principle in resolution and
+lower bounds for tree-like resolution, and a normal form for resolution proofs of pigeonhole principles \cite{BP98}.
+The tree-like resolution size of $\PHP$ is $2^{\Theta(n\log n)}$-type: the lower bound $2^{\Omega(n\log n)}$ is due to Iwama and Miyazaki \cite{IM99} and independently to Dantchev and Riis \cite{DR01}, with a short proof by Beyersdorff, Galesi and Lauria via asymmetric Prover--Delayer games \cite{BGL10}. Urquhart \cite{Urq87} proved exponential lower bounds for Tseitin formulas on expanders. Resolution (DAG-like) refutations of size $n^32^n$ are given in \cite{BP98}.
+The search procedure studied here is the DPLL procedure with unit propagation \cite{DP60,DLL62}, with the Jeroslow--Wang scoring rule \cite{JW90}. The sequence $n\Fub(n-1)$ is listed as A052882 in the OEIS \cite{OEIS}
+(A052882 and A000670 were re-read in the live OEIS on 2026-10-03: $a(n)=n\cdot\mathrm{A000670}(n-1)$ and $a(n)\sim n!/(2(\ln2)^n)$); in an earlier search of the OEIS (run by us, not re-run), the hole-major sequence $1,2,11,85,855,\dots$, the anti-diagonal sequence
+and the $\mathcal D_2$-JW sequence did not appear (this search was not repeated). Generating-function and singularity-analysis facts are from Flajolet and Sedgewick \cite{FS09}.
+We are not aware of a published exact enumeration of the conflict leaves of DPLL with unit propagation on the pigeonhole formula for specific static orders, but we did not perform a systematic search, so ``to our knowledge'' applies.
+
+%=====================================================================
+\section{Limitations}\label{sec:limits}
+\begin{itemize}
+\item The results are about one specific, weak procedure (unit propagation only, binary branching on the first unassigned variable of a fixed order) on one specific formulation of $\PHP$ (no functional, no onto clauses).
+  They are sensitive to the order: by Theorems~\ref{thm:pig} and~\ref{thm:hole} and Section~\ref{sec:asym}, the hole-major count exceeds the pigeon-major count by a factor of order $(e\ln2)^n n^{-5/2}$, i.e.\ exponentially in $n$. They say nothing about CDCL solvers, about other encodings, or about proof size.
+\item They are not proof-complexity bounds: see the discussion in Section~\ref{sec:intro}, where the minimal tree-like resolution sizes $3,11,43,189$ differ from the counts.
+\item Theorems~\ref{thm:pig} and~\ref{thm:hole} are proved here by hand. The proofs have been checked against traces and counts for small $n$ by computer, but have not been formalized in a proof assistant or independently refereed.
+\item The anti-diagonal values for $n>12$ and the $\mathcal D_2$-JW values for $n>12$ rest on one Rust implementation each (cross-validated against independent implementations up to $n=12$); $C_{\mathrm{diag}}(16)$ was produced once and not re-run (and $r(16)$, if used, is likewise unconfirmed); $r(14)$ and $C_{\mathrm{diag}}(14),C_{\mathrm{diag}}(15)$ were later reproduced by independently written programs. The
+  $\mathcal D_2$-JW values depend on the precise definition (scoring, tie-breaking, treatment of satisfied clauses) given in Section~\ref{sec:res2}.
+\item No closed form, recurrence, or asymptotic law is known to us for the anti-diagonal or $\mathcal D_2$-JW counts; nothing is proved about D-finiteness or any other class membership for them. The congruence $r(n)\equiv1\pmod3$ is proved (Proposition~\ref{prop:mod3}).
+\item Theorem~\ref{thm:C} is conditional on Hypothesis~\ref{hyp:H}, which is unproved, and its core certificates are computer-assisted (exact rational arithmetic with a floating-point summation of angle increments with exact margins).
+\item The literature check is limited to the sources listed in the bibliography; the OEIS search for the hole-major, anti-diagonal and $\mathcal D_2$-JW sequences was not repeated.
+\end{itemize}
+
+%=====================================================================
+\begin{thebibliography}{99}
+\bibitem{CR79} S.~A. Cook and R.~A. Reckhow, The relative efficiency of propositional proof systems, \emph{J. Symbolic Logic} \textbf{44}(1) (1979), 36--50, doi:10.2307/2273702.
+\bibitem{DP60} M.~Davis and H.~Putnam, A computing procedure for quantification theory, \emph{J. ACM} \textbf{7}(3) (1960), 201--215, doi:10.1145/321033.321034.
+\bibitem{DLL62} M.~Davis, G.~Logemann and D.~Loveland, A machine program for theorem-proving, \emph{Comm. ACM} \textbf{5}(7) (1962), 394--397, doi:10.1145/368273.368557.
+\bibitem{FS09} P.~Flajolet and R.~Sedgewick, \emph{Analytic Combinatorics}, Cambridge University Press, 2009, doi:10.1017/CBO9780511801655.
+\bibitem{Haken85} A.~Haken, The intractability of resolution, \emph{Theoret. Comput. Sci.} \textbf{39} (1985), 297--308, doi:10.1016/0304-3975(85)90144-6.
+\bibitem{JW90} R.~G. Jeroslow and J.~Wang, Solving propositional satisfiability problems, \emph{Ann. Math. Artif. Intell.} \textbf{1}(1--4) (1990), 167--187, doi:10.1007/BF01531077.
+\bibitem{BP98} S.~R. Buss and T.~Pitassi, Resolution and the weak pigeonhole principle, in \emph{Computer Science Logic (CSL'97)}, LNCS \textbf{1414}, Springer, 1998, 149--156, doi:10.1007/BFb0028012.
+\bibitem{BT88} S.~R. Buss and G.~Tur\'an, Resolution proofs of generalized pigeonhole principles, \emph{Theoret. Comput. Sci.} \textbf{62} (1988), 311--317, doi:10.1016/0304-3975(88)90072-2.
+\bibitem{IM99} K.~Iwama and S.~Miyazaki, Tree-like resolution is superpolynomially slower than DAG-like resolution for the pigeonhole principle, in \emph{ISAAC '99}, LNCS \textbf{1741}, Springer, 1999, 133--142, doi:10.1007/3-540-46632-0\_14.
+\bibitem{DR01} S.~S. Dantchev and S.~Riis, Tree resolution proofs of the weak pigeon-hole principle, in \emph{CCC 2001}, IEEE, 2001, 69--75, doi:10.1109/CCC.2001.933873.
+\bibitem{BGL10} O.~Beyersdorff, N.~Galesi and M.~Lauria, A lower bound for the pigeonhole principle in tree-like resolution by asymmetric Prover--Delayer games, \emph{Inform. Process. Lett.} \textbf{110}(23) (2010), 1074--1077, doi:10.1016/j.ipl.2010.09.007.
+\bibitem{Urq87} A.~Urquhart, Hard examples for resolution, \emph{J. ACM} \textbf{34}(1) (1987), 209--219, doi:10.1145/7531.8928.
+\bibitem{OEIS} The On-Line Encyclopedia of Integer Sequences, sequences A052882 and A000670, \texttt{https://oeis.org}.
+\end{thebibliography}
+
+\end{document}

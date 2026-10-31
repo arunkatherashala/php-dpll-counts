@@ -1,0 +1,5 @@
+diag 14 21354721047401 states=109462791 time=28.6s
+diag 15 547848248627841 states=459602121 time=136.7s
+diag 16 15045475165081609 states=1922855924 time=885.5s
+memory allocation of 8589934592 bytes failed
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
