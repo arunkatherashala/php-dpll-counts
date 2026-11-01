@@ -449,7 +449,7 @@ continues with
 C_{\mathrm{diag}}(15)=547848248627841,\qquad C_{\mathrm{diag}}(16)=15045475165081609.
 \]
 The anti-diagonal values for $n=1,\dots,16$ are
-$1,2,8,45,331,3057,34007,441515,6541557,108804265,2006371441,40615858425,895407989033,\allowbreak 21354721047401,547848248627841,15045475165081609.$
+$1,\allowbreak 2,\allowbreak 8,\allowbreak 45,\allowbreak 331,\allowbreak 3057,\allowbreak 34007,\allowbreak 441515,\allowbreak 6541557,\allowbreak 108804265,\allowbreak 2006371441,\allowbreak 40615858425,\allowbreak 895407989033,\allowbreak 21354721047401,\allowbreak 547848248627841,\allowbreak 15045475165081609.$
 
 \begin{table}[ht]
 \centering
@@ -502,7 +502,7 @@ propagation. $r(n)$ is the number of conflict leaves.
 \end{definition}
 (For $\PHP$ the clauses containing $x_{i,j}$ that are not satisfied are $P_i$, if $i$ has no true cell, and the
 hole clauses $\{x_{i,j},x_{k,j}\}$ with $x_{k,j}$ unassigned, so $J(x_{i,j})=2^{-u(P_i)}[P_i\text{ open}]+(u_j-1)/4$ with $u_j$ the number of unassigned
-cells in column $j$.) The values are $r(1),\dots,r(14)=1,4,13,61,307,2110,14746,130687,1187971,12801700,143164903,1819083835,24104576248,353344753156$.
+cells in column $j$.) The values are $r(1),\dots,r(14)=1,\allowbreak 4,\allowbreak 13,\allowbreak 61,\allowbreak 307,\allowbreak 2110,\allowbreak 14746,\allowbreak 130687,\allowbreak 1187971,\allowbreak 12801700,\allowbreak 143164903,\allowbreak 1819083835,\allowbreak 24104576248,\allowbreak 353344753156$.
 They were computed by a memoised search on residual states canonical under order-preserving renaming of holes and
 rows (program \texttt{ref\_resk.rs}); the number of memoised states is $1127$ for $n=8$ and $10\,884\,108$ for $n=14$. We verified the
 state-based search against a direct clause-level implementation of the definition for $n\le7$ ($k=2$; $n\le7$ also for $k=3,4$ in the companion logs) and against an independent
@@ -528,10 +528,10 @@ Section~\ref{sec:errata}, and the certificates of Theorem~\ref{thm:C}; it runs t
 and prints \texttt{ALL OK} at the end. Items it does not recompute (the stored runs mentioned above and the
 $n=4$ minimum tree-resolution value, available with \texttt{--slow}) are listed at the end of its output.
 
-\paragraph{Machine-checked parts.} The directory \texttt{lean/} of the same repository contains Lean~4 files (core
-library only, no Mathlib; no \texttt{sorry} and no axioms beyond \texttt{propext}, \texttt{Quot.sound} and
-\texttt{Classical.choice}) that verify, for \emph{all} $f$ and $n$, the purely combinatorial halves of
-Theorems~\ref{thm:pig} and~\ref{thm:hole}: that the recurrence of Lemma~\ref{lem:pig3} has the solution
+\paragraph{Machine-checked parts.} The directory \texttt{lean/} of the same repository contains Lean~4 files
+(core library only, no Mathlib, no \texttt{sorry}; the only axioms used are the standard ones \texttt{propext},
+\texttt{Quot.sound} and \texttt{Classical.choice}). They verify, for \emph{all} $f$ and $n$, the purely combinatorial
+halves of Theorems~\ref{thm:pig} and~\ref{thm:hole}: that the recurrence of Lemma~\ref{lem:pig3} has the solution
 $L(f)=f\cdot\Fub(f-1)$ (\texttt{Pigeon.lean}), and that the word sum \eqref{eq:sum} equals
 $(n+2)^{n-2}+(n+3)^{n-2}$ for $n\ge2$ (\texttt{Hole.lean}, \texttt{Hole2.lean}). The reductions from the DPLL
 procedure with unit propagation to the recurrence and to the word sum (Lemmas~\ref{lem:pig1}, \ref{lem:pig2},
@@ -651,7 +651,7 @@ We have no asymptotic statement for the anti-diagonal order or for $\mathcal D_2
 Let $r(n)$ be the $\mathcal D_2$-JW counts, $b_n=r(n+1)/n!$ ($n\ge0$, so $b_0=r(1)=1$), $R(x)=\sum_{n\ge0}b_nx^n$ (this is $\frac{d}{dx}\sum_{n\ge1}r(n)x^n/n!$), and let
 $C(x)=\log R(x)=\sum_{n\ge1}f_nx^n$ be the formal logarithm, $F_n=n!f_n$. The $f_n$ obey $nf_n=nb_n-\sum_{k=1}^{n-1}kf_kb_{n-k}$ and, for $n\le13$, are determined by $b_0,\dots,b_n$.
 (We write $C(x)$ here for the generating function of the logarithm; it has nothing to do with the leaf counts $C(n)$ of the other sections, which we do not use in this section.)
-Exactly, $F_1,\dots,F_{13}=4,-3,33,-216,2496,-31059,479934,-8454426,171387720,-3898302102,98654494668,-2745253754127,83351925966882$.
+Exactly, $F_1,\dots,F_{13}=4,\allowbreak -3,\allowbreak 33,\allowbreak -216,\allowbreak 2496,\allowbreak -31059,\allowbreak 479934,\allowbreak -8454426,\allowbreak 171387720,\allowbreak -3898302102,\allowbreak 98654494668,\allowbreak -2745253754127,\allowbreak 83351925966882$.
 
 \paragraph{The 14-term zero.} The polynomial $R_{14}(x)=\sum_{n=0}^{13}b_nx^n$ has exactly one zero in $|x|<9/20$, a real simple zero
 \[
