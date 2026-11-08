@@ -32,3 +32,7 @@ Lean 4 (core only, no Mathlib), tested with Lean 4.34.1: `lean Pigeon.lean`, `le
 No `sorry`; `#print axioms` reports only `propext`, `Quot.sound`, `Classical.choice`.
 The reductions from DPLL with unit propagation to the recurrence and to the word sum are **not** formalized;
 they rest on the proofs in the paper.
+
+## `no-short-desc/`
+
+Companion artifact for the phenomenology note *"A measurement note: DPLL+UP conflict-count dichotomy on a NoShortDesc_U encoding"* (2026). Contains the encoder scripts, probe runners, and raw CSV outputs underlying the dichotomy observation on `NoShortDesc_U(n,k,t,x)` for three static orderings (`program_first`, `trace_first`, `head_first`). See `no-short-desc/README.md` for file index, reproduction commands, timeout policy, and honest caveats.

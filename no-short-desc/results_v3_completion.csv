@@ -1,0 +1,10 @@
+n,k,t,x,order,num_vars,num_clauses,conflicts,time_sec,timed_out
+3,4,12,001,program_first,82,777,16,0.031,False
+3,4,12,001,trace_first,82,777,2627532,600.016,True
+3,4,12,001,head_first,82,777,650331,600.047,True
+3,5,12,111,program_first,83,777,30,0.031,False
+3,5,12,111,trace_first,83,777,3974700,600.016,True
+3,5,12,111,head_first,83,777,662220,600.015,True
+3,6,12,100,program_first,84,777,55,0.078,False
+3,6,12,100,trace_first,84,777,2751636,600.047,True
+3,6,12,100,head_first,84,777,595511,600.032,True
